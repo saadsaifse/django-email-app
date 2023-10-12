@@ -1,8 +1,9 @@
 from django.urls import path
-from .views import SendEmailView
+from .views import SendEmailView, EmailViewSet
 
 app_name = 'emailSender'
 
 urlpatterns = [
-    path('send', SendEmailView.as_view()),
+    path('send/', SendEmailView.as_view()),
+    path('emails/', EmailViewSet.as_view({'get':'list'})),
 ]
