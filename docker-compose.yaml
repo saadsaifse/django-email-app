@@ -16,10 +16,12 @@ services:
              python manage.py runserver 0.0.0.0:8000"
     environment:
       - DB_HOST=db
-      - DB_NAME=devdb
-      - DB_USER=devuser
-      - DB_PASS=changeme
+      - DB_NAME=$DB_NAME
+      - DB_USER=$DB_USER
+      - DB_PASS=$DB_PASS
       - DEBUG=1
+      - DEFAULT_FROM_EMAIL=$DEFAULT_FROM_EMAIL
+      - POSTMARK_API_KEY=$POSTMARK_API_KEY
     depends_on:
       - db
 
