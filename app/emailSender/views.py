@@ -1,12 +1,16 @@
 from anymail.message import AnymailMessage
+import os
 from rest_framework import status
 from rest_framework.response import Response
 from .models import SentEmail
 from .serializer import SentEmailSerializer
 from rest_framework.generics import GenericAPIView
+from django.conf import settings
+from rest_framework.parsers import MultiPartParser
 
 
 class SendEmailView(GenericAPIView):
+    parser_classes = [MultiPartParser]
     queryset = SentEmail.objects.all()
     serializer_class = SentEmailSerializer
 
@@ -33,7 +37,8 @@ class SendEmailView(GenericAPIView):
             from_email=sender,
             to=recipients,
         )
-        if attachments:
+        if attachments and attachments.size > 0:
+            attachments.seek(0)
             message.attach(attachments.name, attachments.read(), attachments.content_type)
 
         message_id = message.send()
