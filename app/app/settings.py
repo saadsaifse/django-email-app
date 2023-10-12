@@ -63,7 +63,8 @@ SPECTACULAR_SETTINGS = {
 }
 
 ANYMAIL = {
-    "POSTMARK_SERVER_TOKEN": os.environ.get('POSTMARK_SERVER_TOKEN'),
+    'POSTMARK_SERVER_TOKEN': os.environ.get('POSTMARK_SERVER_TOKEN'),
+    'WEBHOOK_SECRET': 'change1stsecret999:change2ndsecret999',
 }
 
 EMAIL_BACKEND = "anymail.backends.postmark.EmailBackend"
