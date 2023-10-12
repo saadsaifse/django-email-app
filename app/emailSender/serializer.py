@@ -5,7 +5,7 @@ class SentEmailSerializer(serializers.ModelSerializer):
     class Meta:
         model = SentEmail
         fields = '__all__'
-        read_only_fields = ['id', 'message_id']
+        read_only_fields = ['id', 'message_id', 'status']
 
     scheduled_send_at = serializers.DateTimeField(
     format="%Y-%m-%dT%H:%M:%S",

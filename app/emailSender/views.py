@@ -24,44 +24,44 @@ class SendEmailView(GenericAPIView):
 
     def post(self, request):
         sender = request.data.get('sender')
-        recipients = request.data.get('recipients')  # Comma-separated list of recipient email addresses
-        recipients = recipients.split(',')  # Split the string into a list
+        recipients = request.data.get('recipient')  # Comma-separated list of recipient email addresses
+        recipients = [r.strip() for r in recipients.split(',')]  # Split the string into a list and trim
         subject = request.data.get('subject')
         body = request.data.get('body')
-        attachments = request.data.get('attachments')
+        attachment = request.data.get('attachment')
         scheduled_send_at = request.data.get('scheduled_send_at')
 
-        sent_email = SentEmail(sender=sender, subject=subject, body=body, attachments=attachments)
+        sent_emails = []
+        for r in recipients:
+            sent_email = SentEmail(sender=sender, subject=subject, body=body, attachment=attachment, recipient=r)
 
-        if scheduled_send_at:
-            sent_email.scheduled_send_at = scheduled_send_at
+            if scheduled_send_at:
+                sent_email.scheduled_send_at = scheduled_send_at
 
-        sent_email.recipients = ', '.join(recipients)
-        print(request.user)
-        sent_email.user = request.user
-        sent_email.save()
+            sent_email.user = request.user
+            sent_email.recipient = r
+            sent_email.save()
+            sent_emails.append(sent_email)
 
+        # Prepare to send emails to all recipients at once
         message = AnymailMessage(
             subject=subject,
             body=body,
             from_email=sender,
             to=recipients,
         )
-        if attachments and attachments.size > 0:
-            attachments.seek(0)
-            message.attach(attachments.name, attachments.read(), attachments.content_type)
+
+        if attachment and attachment.size > 0:
+            attachment.seek(0)
+            message.attach(attachment.name, attachment.read(), attachment.content_type)
 
         message.send()
-
         anymail_status = message.anymail_status
-        print(anymail_status)
-        anymail_status.message_id
-
-        sent_email.message_id = anymail_status.message_id
-        status_iterator = iter(anymail_status.status)
-        first_item = next(status_iterator)
-        sent_email.status = get_status_choices_name(first_item)
-        sent_email.save()
+        for email, recipient_status in anymail_status.recipients.items():
+            sent_email = [se for se in sent_emails if se.recipient == email][0]
+            sent_email.message_id = anymail_status.message_id
+            sent_email.status = get_status_choices_name(recipient_status.status)
+            sent_email.save()
 
         return Response({'message': 'Email sent successfully', 'message_id': anymail_status.message_id}, status=status.HTTP_200_OK)
 
