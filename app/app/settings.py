@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'anymail',
-    'emailSender'
+    'emailSender',
+    'drf_spectacular',
 ]
 
 REST_FRAMEWORK = {
@@ -53,11 +54,16 @@ REST_FRAMEWORK = {
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'COMPONENT_SPLIT_REQUEST': True,
 }
 
 ANYMAIL = {
-    "POSTMARK_API_KEY": os.environ.get('POSTMARK_API_KEY'),
+    "POSTMARK_SERVER_TOKEN": os.environ.get('POSTMARK_SERVER_TOKEN'),
 }
 
 EMAIL_BACKEND = "anymail.backends.postmark.EmailBackend"
