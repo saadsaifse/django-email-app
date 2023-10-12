@@ -43,7 +43,7 @@ urlpatterns = [
     path("api/email/webhook/", include("anymail.urls")),
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api/email/', include('emailSender.urls')),
+    path('api/', include('emailSender.urls')),
     path('api/schema/', SpectacularAPIView.as_view(), name='api-schema'),
     path(
         'api/docs/',

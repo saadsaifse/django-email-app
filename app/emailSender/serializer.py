@@ -13,3 +13,9 @@ class SentEmailSerializer(serializers.ModelSerializer):
     help_text="Enter a date and time in ISO format (e.g., '2023-10-15T14:30:00').",
     required=False
     )
+
+
+class SentEmailStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SentEmail
+        fields = ('message_id', 'sender', 'recipient', 'subject', 'status')

@@ -2,7 +2,7 @@ from anymail.message import AnymailMessage
 import os
 from rest_framework.response import Response
 from .models import SentEmail, get_status_choices_name
-from .serializer import SentEmailSerializer
+from .serializer import SentEmailSerializer, SentEmailStatusSerializer
 from rest_framework.generics import GenericAPIView
 from django.conf import settings
 from rest_framework.parsers import MultiPartParser
@@ -13,6 +13,12 @@ from rest_framework import (
 )
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import (
+    extend_schema_view,
+    extend_schema,
+    OpenApiParameter,
+    OpenApiTypes,
+)
 
 
 class SendEmailView(GenericAPIView):
@@ -57,6 +63,7 @@ class SendEmailView(GenericAPIView):
 
         message.send()
         anymail_status = message.anymail_status
+
         for email, recipient_status in anymail_status.recipients.items():
             sent_email = [se for se in sent_emails if se.recipient == email][0]
             sent_email.message_id = anymail_status.message_id
@@ -80,4 +87,48 @@ class EmailViewSet(mixins.ListModelMixin,
     #     return queryset.filter(
     #         user=self.request.user
     #     ).order_by('-id').distinct()
+
+
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                'message_id',
+                OpenApiTypes.STR,
+                description='Message ID to filter',
+            ),
+            OpenApiParameter(
+                'sender',
+                OpenApiTypes.STR,
+                description="Sender's email address to filter",
+            ),
+            OpenApiParameter(
+                'recipient',
+                OpenApiTypes.STR,
+                description="Recipient's email address to filter",
+            ),
+        ]
+    )
+)
+class EmailStatusViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = SentEmailStatusSerializer
+
+    def get_queryset(self):
+        queryset = SentEmail.objects.all()
+
+        # Apply filtering based on the query parameters
+        message_id = self.request.query_params.get('message_id')
+        sender = self.request.query_params.get('sender')
+        recipient = self.request.query_params.get('recipient')
+
+        if message_id:
+            queryset = queryset.filter(message_id=message_id)
+        if sender:
+            queryset = queryset.filter(sender=sender)
+        if recipient:
+            queryset = queryset.filter(recipient=recipient)
+
+        return queryset
 
