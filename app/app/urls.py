@@ -23,7 +23,7 @@ from django.contrib.auth.models import User
 from rest_framework import routers, serializers, viewsets
 
 # Serializers define the API representation.
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['url', 'username', 'email', 'is_staff']
@@ -42,7 +42,7 @@ router.register(r'users', UserViewSet)
 urlpatterns = [
     path("api/email/webhook/", include("anymail.urls")),
     path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    #path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/', include('emailSender.urls')),
     path('api/schema/', SpectacularAPIView.as_view(), name='api-schema'),
     path(
