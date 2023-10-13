@@ -39,7 +39,8 @@ class SendEmailView(GenericAPIView):
 
         sent_emails = []
         for r in recipients:
-            sent_email = SentEmail(sender=sender, subject=subject, body=body, attachment=attachment, recipient=r)
+            sent_email = SentEmail(sender=sender, subject=subject, body=body,
+                                   attachment=attachment, recipient=r)
 
             if scheduled_send_at:
                 sent_email.scheduled_send_at = scheduled_send_at
@@ -59,7 +60,8 @@ class SendEmailView(GenericAPIView):
 
         if attachment and attachment.size > 0:
             attachment.seek(0)
-            message.attach(attachment.name, attachment.read(), attachment.content_type)
+            message.attach(attachment.name, attachment.read(),
+                           attachment.content_type)
 
         message.send()
         anymail_status = message.anymail_status
@@ -67,10 +69,15 @@ class SendEmailView(GenericAPIView):
         for email, recipient_status in anymail_status.recipients.items():
             sent_email = [se for se in sent_emails if se.recipient == email][0]
             sent_email.message_id = anymail_status.message_id
-            sent_email.status = get_status_choices_name(recipient_status.status)
+            sent_email.status = get_status_choices_name(
+                recipient_status.status
+                )
             sent_email.save()
 
-        return Response({'message': 'Email sent successfully', 'message_id': anymail_status.message_id}, status=status.HTTP_200_OK)
+        return Response({'message': 'Email sent successfully',
+                        'message_id': anymail_status.message_id},
+                        status=status.HTTP_200_OK)
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -109,7 +116,7 @@ class SendEmailView(GenericAPIView):
     )
 )
 class EmailViewSet(mixins.ListModelMixin,
-                            viewsets.GenericViewSet):
+                    viewsets.GenericViewSet):
     """Viewset for sent emails."""
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
@@ -124,6 +131,9 @@ class EmailViewSet(mixins.ListModelMixin,
         status = self.request.query_params.get('status')
         subject = self.request.query_params.get('subject')
         sent_on = self.request.query_params.get('sent_on')
+
+        # Strange behaviour, not working. Ideally I'd like to filter emails by the logged in user
+        # queryset = queryset.filter(user__username='admin')
 
         if message_id:
             queryset = queryset.filter(message_id=message_id)
@@ -192,6 +202,7 @@ class EmailStatusViewSet(viewsets.ReadOnlyModelViewSet):
         message_id = self.request.query_params.get('message_id')
         sender = self.request.query_params.get('sender')
         recipient = self.request.query_params.get('recipient')
+        status = self.request.query_params.get('status')
         subject = self.request.query_params.get('subject')
         sent_on = self.request.query_params.get('sent_on')
 
